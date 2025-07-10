@@ -13,7 +13,8 @@ The `SamplePlugin` implements a `PluginInterface` and is automatically loaded by
  - [Publishing your plugin](#publishing-your-plugin)
 
 ## Usage
-The `SamplePlugin` requires an installation of [RaspAP](https://github.com/RaspAP/raspap-webgui), either via the [Quick install](https://docs.raspap.com/quick/) method or with a [Docker container](https://docs.raspap.com/docker/). The default application path `/var/www/html` is used here. If you've chosen a different install location, substitute this in the steps below.
+The `SamplePlugin` requires an installation of [RaspAP](https://github.com/RaspAP/raspap-webgui), either via a [pre-built OS image](https://docs.raspap.com/quick_start/#pre-built-image), 
+with the [Quick installer](https://docs.raspap.com/quick/) or a [Docker container](https://docs.raspap.com/docker/). The default application path `/var/www/html` is used here. If you've chosen a different install location, substitute this in the steps below.
 
 1. Begin by creating a fork of this repository.
 2. Change to the install location and create a `/plugins` directory.
