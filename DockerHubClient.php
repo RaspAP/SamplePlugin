@@ -2,12 +2,31 @@
 
 namespace RaspAP\Plugins\Docker;
 
+/**
+ * DockerHubClient
+ *
+ * @description Docker Hub API client for searching public repositories
+ * @author      RaspAP <hello@raspap.com>
+ * @license     https://github.com/RaspAP/raspap-webgui/blob/master/LICENSE
+ */
+
+/**
+ * Wraps the Docker Hub v2 search API with response normalization
+ * and HTTP error handling.
+ */
 class DockerHubClient
 {
     private string $apiBase   = 'https://hub.docker.com/v2/search/repositories/';
     private int    $timeout   = 5;
     private int    $pageSize  = 10;
 
+    /**
+     * Searches Docker Hub for public repositories matching a query
+     *
+     * @param string $query search string (must not be empty)
+     * @param int    $page  page number for pagination (1-based)
+     * @return array{results: array, total_count: int, page: int, error: bool, error_message?: string}
+     */
     public function search(string $query, int $page = 1): array
     {
         if (trim($query) === '') {
