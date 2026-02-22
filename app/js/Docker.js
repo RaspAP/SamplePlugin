@@ -29,7 +29,7 @@ $(function () {
 
     dockerPollingIntervals[jobId] = setInterval(function () {
       $.post(
-        "ajax/plugins/docker_job_status.php",
+        "plugins/Docker/ajax/docker_job_status.php",
         { jobId: jobId, csrf_token: csrfToken },
         function (data) {
           var json;
@@ -50,7 +50,7 @@ $(function () {
             delete dockerPollingIntervals[jobId];
 
             // Ask the server to clean up the job file
-            $.post("ajax/plugins/docker_job_status.php", {
+            $.post("plugins/Docker/ajax/docker_job_status.php", {
               jobId: jobId,
               cleanup: "true",
               csrf_token: csrfToken,
@@ -79,7 +79,7 @@ $(function () {
     $btn.prop("disabled", true).text("Starting…");
 
     $.post(
-      "ajax/plugins/docker_action.php",
+      "plugins/Docker/ajax/docker_action.php",
       { action: "daemon_start", csrf_token: csrfToken },
       function (data) {
         var json;
@@ -114,7 +114,7 @@ $(function () {
       $btn.prop("disabled", true);
 
       $.post(
-        "ajax/plugins/docker_action.php",
+        "plugins/Docker/ajax/docker_action.php",
         { action: action, id: id, csrf_token: csrfToken },
         function (data) {
           var json;
@@ -165,7 +165,7 @@ $(function () {
     if ($(this).is(":checked")) {
       dockerAutoRefreshInterval = setInterval(function () {
         $.post(
-          "ajax/plugins/docker_action.php",
+          "plugins/Docker/ajax/docker_action.php",
           { action: "status_summary", csrf_token: csrfToken },
           function () {
             location.reload();
@@ -212,7 +212,7 @@ $(function () {
     if (modal) modal.hide();
 
     $.post(
-      "ajax/plugins/docker_action.php",
+      "plugins/Docker/ajax/docker_action.php",
       {
         action: "image_delete",
         id: dockerImageDeleteId,
@@ -256,7 +256,7 @@ $(function () {
       );
 
     $.post(
-      "ajax/plugins/docker_hub_search.php",
+      "plugins/Docker/ajax/docker_hub_search.php",
       {
         query: query,
         page: page,
@@ -394,7 +394,7 @@ $(function () {
     $("#docker-pull-log-panel").removeClass("d-none");
 
     $.post(
-      "ajax/plugins/docker_image_pull.php",
+      "plugins/Docker/ajax/docker_image_pull.php",
       { image: image, csrf_token: csrfToken },
       function (data) {
         var json;
@@ -558,7 +558,7 @@ $(function () {
     });
 
     $.post(
-      "ajax/plugins/docker_create_container.php",
+      "plugins/Docker/ajax/docker_create_container.php",
       {
         image: image,
         name: $("#cc-name").val().trim(),
@@ -615,7 +615,7 @@ $(function () {
       $btn.prop("disabled", true);
 
       $.post(
-        "ajax/plugins/docker_action.php",
+        "plugins/Docker/ajax/docker_action.php",
         { action: action, id: id, csrf_token: csrfToken },
         function (data) {
           var json;
@@ -666,7 +666,7 @@ $(function () {
     $("#docker-inspect-output").text("Loading…");
 
     $.post(
-      "ajax/plugins/docker_action.php",
+      "plugins/Docker/ajax/docker_action.php",
       { action: "container_inspect", id: id, csrf_token: csrfToken },
       function (data) {
         var json;
@@ -708,7 +708,7 @@ $(function () {
     if (modal) modal.hide();
 
     $.post(
-      "ajax/plugins/docker_action.php",
+      "plugins/Docker/ajax/docker_action.php",
       {
         action: "container_delete",
         id: dockerContainerDeleteId,
@@ -765,7 +765,7 @@ $(function () {
       $logPanel.removeClass("d-none");
 
       $.post(
-        "ajax/plugins/docker_compose_action.php",
+        "plugins/Docker/ajax/docker_compose_action.php",
         {
           project: project,
           action: action,
@@ -872,7 +872,7 @@ $(function () {
     if (modal) modal.hide();
 
     $.post(
-      "ajax/plugins/docker_action.php",
+      "plugins/Docker/ajax/docker_action.php",
       {
         action: "compose_delete",
         project: dockerComposeDeleteProject,
@@ -953,7 +953,7 @@ $(function () {
     var csrfToken = $("meta[name=csrf_token]").attr("content");
 
     $.post(
-      "ajax/plugins/docker_volume_browse.php",
+      "plugins/Docker/ajax/docker_volume_browse.php",
       {
         volume_name: volumeName,
         subpath: subpath,
@@ -1109,7 +1109,7 @@ $(function () {
     });
 
     $.post(
-      "ajax/plugins/docker_action.php",
+      "plugins/Docker/ajax/docker_action.php",
       {
         action: "volume_create",
         name: name,
@@ -1181,7 +1181,7 @@ $(function () {
     if (modal) modal.hide();
 
     $.post(
-      "ajax/plugins/docker_action.php",
+      "plugins/Docker/ajax/docker_action.php",
       {
         action: "volume_delete",
         name: dockerVolumeDeleteName,
