@@ -2,8 +2,8 @@
   "name": "Docker",
   "version": "v1.0.0",
   "description": "A Docker container management plugin for RaspAP",
-  "author": "RaspAP",
-  "author_uri": "https://github.com/RaspAP",
+  "author": "cyrus104",
+  "author_uri": "https://github.com/cyrus104",
   "plugin_uri": "https://github.com/cyrus104/docker-plugin",
   "plugin_docs": "https://docs.raspap.com/docker",
   "license": "GPL-3.0",
@@ -40,7 +40,7 @@
     "www-data ALL=(ALL) NOPASSWD:/bin/systemctl stop docker",
     "www-data ALL=(ALL) NOPASSWD:/bin/ls *"
   ],
-  "javascript": [
-    "app/js/Docker.js"
-  ]
+  "javascript": {
+    "source": "app/js/Docker.js"
+  }
 }
