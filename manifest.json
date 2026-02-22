@@ -1,37 +1,46 @@
 {
-  "name": "Sample Plugin",
-  "version": "v1.0.0-beta",
-  "description": "A sample user plugin to extend RaspAP",
-  "author": "A. Plugin Author",
-  "author_uri": "https://github.com/",
-  "plugin_uri": "https://github.com/RaspAP/SamplePlugin",
-  "plugin_docs": "https://docs.raspap.com/custom-plugins/",
+  "name": "Docker",
+  "version": "v1.0.0",
+  "description": "A Docker container management plugin for RaspAP",
+  "author": "RaspAP",
+  "author_uri": "https://github.com/RaspAP",
+  "plugin_uri": "https://github.com/RaspAP/Docker",
+  "plugin_docs": "https://docs.raspap.com/docker",
   "license": "GPL-3.0",
-  "namespace": "RaspAP\\Plugins\\SamplePlugin",
-  "configuration": [
+  "namespace": "RaspAP\\Plugins\\Docker",
+  "icon": "fab fa-docker",
+  "install_path": "plugins-available",
+  "manifest_version": "1.0",
+  "default_locale": "en_US",
+  "keys": [
     {
-      "source": "config/myplugin.conf",
-      "destination": "/etc/myplugin.conf"
+      "key_url": "https://download.docker.com/linux/debian/gpg",
+      "keyring": "/usr/share/keyrings/docker-archive-keyring.gpg",
+      "repo": "https://download.docker.com/linux/debian",
+      "sources": "/etc/apt/sources.list.d/docker.list"
     }
   ],
-  "default_locale": "en_US",
   "dependencies": {
-    "sample-server": "1.0"
+    "docker-ce": "latest",
+    "docker-ce-cli": "latest",
+    "containerd.io": "latest",
+    "docker-buildx-plugin": "latest",
+    "docker-compose-plugin": "latest"
   },
-  "icon": "fas fa-plug",
-  "install_path": "plugins",
-  "javascript": {
-        "source": "templates/app/js/Sample.js"
-  },
-  "manifest_version": "1.0",
-  "sudoers": [
-    "www-data ALL=(ALL) NOPASSWD:/bin/systemctl * sample.service",
-    "www-data ALL=(ALL) NOPASSWD:/bin/cat /etc/myplugin.conf",
-    "www-data ALL=(ALL) NOPASSWD:/bin/cp /tmp/myplugin.conf /etc/myplugin.conf"
+  "configuration": [
+    {
+      "source": "config/.gitkeep",
+      "destination": "/etc/raspap/docker/compose/.gitkeep"
+    }
   ],
-  "user_nonprivileged": {
-    "name": "sampleuser",
-    "pass": "samplepass"
-  }
+  "sudoers": [
+    "www-data ALL=(ALL) NOPASSWD:/usr/bin/docker *",
+    "www-data ALL=(ALL) NOPASSWD:/usr/bin/docker compose *",
+    "www-data ALL=(ALL) NOPASSWD:/bin/systemctl start docker",
+    "www-data ALL=(ALL) NOPASSWD:/bin/systemctl stop docker",
+    "www-data ALL=(ALL) NOPASSWD:/bin/ls *"
+  ],
+  "javascript": [
+    "app/js/Docker.js"
+  ]
 }
-
