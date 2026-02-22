@@ -6,6 +6,18 @@ if (!defined('RASPI_DOCKER_CONFIG')) {
     define('RASPI_DOCKER_CONFIG', '/etc/raspap/docker');
 }
 
+/**
+ * DockerService
+ *
+ * @description Service class for Docker daemon interactions
+ * @author      RaspAP <hello@raspap.com>
+ * @license     https://github.com/RaspAP/raspap-webgui/blob/master/LICENSE
+ */
+
+/**
+ * Provides methods for managing Docker containers, images, volumes,
+ * Compose projects, and daemon lifecycle via the Docker CLI.
+ */
 class DockerService
 {
     private string $dockerBin = '/usr/bin/docker';
@@ -20,6 +32,11 @@ class DockerService
     // Read methods
     // -------------------------------------------------------------------------
 
+    /**
+     * Returns all containers (running and stopped)
+     *
+     * @return array array of container objects decoded from docker ps JSON output
+     */
     public function getContainers(): array
     {
         $cmd = "sudo /usr/bin/docker ps -a --format '{{json .}}'";
@@ -30,6 +47,11 @@ class DockerService
         return array_values(array_filter(array_map('json_decode', $lines)));
     }
 
+    /**
+     * Returns all locally available images
+     *
+     * @return array array of image objects decoded from docker images JSON output
+     */
     public function getImages(): array
     {
         $cmd = "sudo /usr/bin/docker images --format '{{json .}}'";
@@ -40,6 +62,11 @@ class DockerService
         return array_values(array_filter(array_map('json_decode', $lines)));
     }
 
+    /**
+     * Returns all volumes with inspect details merged in
+     *
+     * @return array array of volume info arrays including Mountpoint, Labels, CreatedAt, Driver
+     */
     public function getVolumes(): array
     {
         exec("sudo /usr/bin/docker volume ls --format '{{json .}}'", $lines, $exitCode);
@@ -74,6 +101,11 @@ class DockerService
         return $result;
     }
 
+    /**
+     * Returns disk usage for images, containers, and volumes
+     *
+     * @return array parsed system df output, or ['raw' => string] fallback
+     */
     public function getSystemDf(): array
     {
         exec("sudo /usr/bin/docker system df --format '{{json .}}'", $lines, $exitCode);
@@ -95,6 +127,13 @@ class DockerService
     // Action methods
     // -------------------------------------------------------------------------
 
+    /**
+     * Performs a lifecycle action on a container
+     *
+     * @param string $id     container ID or name
+     * @param string $action one of: start, stop, rm
+     * @return array{success: bool, output: string}
+     */
     public function containerAction(string $id, string $action): array
     {
         $allowed = ['start', 'stop', 'rm'];
@@ -111,6 +150,13 @@ class DockerService
         ];
     }
 
+    /**
+     * Creates and starts a new container
+     *
+     * @param array $params container parameters (image required; name, ports, volumes, env, network,
+     *                      restart, entrypoint, labels, cpu_limit, memory_limit, cmd optional)
+     * @return array{success: bool, container_id: string, error: string}
+     */
     public function createContainer(array $params): array
     {
         if (empty($params['image'])) {
@@ -182,6 +228,12 @@ class DockerService
         ];
     }
 
+    /**
+     * Deletes a Docker image by ID or name
+     *
+     * @param string $id image ID or name:tag
+     * @return array{success: bool, output: string}
+     */
     public function deleteImage(string $id): array
     {
         exec('sudo /usr/bin/docker rmi ' . escapeshellarg($id), $output, $exitCode);
@@ -192,6 +244,14 @@ class DockerService
         ];
     }
 
+    /**
+     * Creates a named volume
+     *
+     * @param string $name   volume name
+     * @param string $driver volume driver (default: local)
+     * @param array  $labels optional labels as ['key=value', ...]
+     * @return array{success: bool, name: string, error: string}
+     */
     public function createVolume(string $name, string $driver = 'local', array $labels = []): array
     {
         $cmd = 'sudo /usr/bin/docker volume create --driver ' . escapeshellarg($driver);
@@ -213,6 +273,12 @@ class DockerService
         ];
     }
 
+    /**
+     * Deletes a volume by name
+     *
+     * @param string $name volume name
+     * @return array{success: bool, output: string}
+     */
     public function deleteVolume(string $name): array
     {
         exec('sudo /usr/bin/docker volume rm ' . escapeshellarg($name), $output, $exitCode);
@@ -227,24 +293,45 @@ class DockerService
     // Inspect / status methods
     // -------------------------------------------------------------------------
 
+    /**
+     * Returns raw JSON inspect output for a container
+     *
+     * @param string $id container ID or name
+     * @return string JSON string from docker inspect
+     */
     public function inspectContainer(string $id): string
     {
         $output = shell_exec('sudo /usr/bin/docker inspect ' . escapeshellarg($id));
         return $output ?? '';
     }
 
+    /**
+     * Returns the Docker daemon systemd status
+     *
+     * @return string one of: active, inactive, failed, unknown
+     */
     public function getDaemonStatus(): string
     {
         $output = shell_exec('systemctl is-active docker');
         return trim($output ?? 'inactive');
     }
 
+    /**
+     * Starts the Docker daemon via systemctl
+     *
+     * @return array{success: bool}
+     */
     public function startDockerDaemon(): array
     {
         exec('sudo /bin/systemctl start docker', $output, $exitCode);
         return ['success' => $exitCode === 0];
     }
 
+    /**
+     * Returns the installed Docker version string
+     *
+     * @return string e.g. "Docker version 24.0.5, build ..." or empty string if not found
+     */
     public function getDockerVersion(): string
     {
         if (!file_exists($this->dockerBin)) {
@@ -258,6 +345,13 @@ class DockerService
     // Compose file management (filesystem only)
     // -------------------------------------------------------------------------
 
+    /**
+     * Returns all Compose projects found under the compose config directory
+     *
+     * Each project is a directory containing a docker-compose.yml file.
+     *
+     * @return array array of ['name', 'path', 'yaml', 'modified'] per project
+     */
     public function getComposeProjects(): array
     {
         if (!is_dir($this->composePath)) {
@@ -293,6 +387,13 @@ class DockerService
         return $projects;
     }
 
+    /**
+     * Saves or overwrites a docker-compose.yml for the given project name
+     *
+     * @param string $project project name (alphanumeric, hyphens, underscores only)
+     * @param string $yaml    YAML content to write
+     * @return bool true on success
+     */
     public function saveComposeFile(string $project, string $yaml): bool
     {
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $project)) {
@@ -307,6 +408,12 @@ class DockerService
         return file_put_contents($dir . '/docker-compose.yml', $yaml) !== false;
     }
 
+    /**
+     * Deletes a Compose project directory and all its contents
+     *
+     * @param string $project project name (alphanumeric, hyphens, underscores only)
+     * @return bool true on success, false if not found or name invalid
+     */
     public function deleteComposeProject(string $project): bool
     {
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $project)) {
@@ -339,6 +446,14 @@ class DockerService
     // Volume file browser
     // -------------------------------------------------------------------------
 
+    /**
+     * Lists the contents of a volume mountpoint path
+     *
+     * @param string $mountpoint absolute path of the volume mountpoint
+     * @param string $subpath    optional subdirectory relative to mountpoint
+     * @return array{entries: array, current_path: string, error: string}
+     * @throws \RuntimeException on invalid path or traversal attempt
+     */
     public function browseVolumePath(string $mountpoint, string $subpath = ''): array
     {
         $realMount = realpath($mountpoint);
