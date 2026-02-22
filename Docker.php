@@ -7,6 +7,10 @@ use RaspAP\UI\Sidebar;
 
 require_once __DIR__ . '/DockerService.php';
 
+if (!defined('RASPI_DOCKER_CONFIG')) {
+    define('RASPI_DOCKER_CONFIG', '/etc/raspap/docker');
+}
+
 class Docker implements PluginInterface
 {
     private string $pluginPath;
