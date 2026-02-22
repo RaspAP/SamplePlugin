@@ -15,6 +15,12 @@
 
     <rule ref="PSR2"/>
 
+    <!-- Suppress PSR1 side-effects warning: require_once in plugin files and
+         procedural ajax scripts is unavoidable in RaspAP's plugin architecture -->
+    <rule ref="PSR1.Files.SideEffects">
+        <severity>0</severity>
+    </rule>
+
     <!-- Output formatting -->
     <arg name="colors"/>
     <arg value="sp"/>
