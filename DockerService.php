@@ -2,6 +2,10 @@
 
 namespace RaspAP\Plugins\Docker;
 
+if (!defined('RASPI_DOCKER_CONFIG')) {
+    define('RASPI_DOCKER_CONFIG', '/etc/raspap/docker');
+}
+
 class DockerService
 {
     private string $dockerBin = '/usr/bin/docker';
