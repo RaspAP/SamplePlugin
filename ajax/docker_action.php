@@ -43,6 +43,18 @@ switch ($action) {
         echo json_encode(['output' => $output]);
         break;
 
+    case 'container_logs':
+        $id = $_POST['id'] ?? null;
+        if ($id === null) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing parameter: id']);
+            exit;
+        }
+        $tail = max(1, min(2000, (int)($_POST['tail'] ?? 200)));
+        $output = $service->getContainerLogs($id, $tail);
+        echo json_encode(['output' => $output]);
+        break;
+
     case 'image_delete':
         $id = $_POST['id'] ?? null;
         if ($id === null) {

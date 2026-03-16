@@ -431,6 +431,8 @@ $(function () {
    * ──────────────────────────────────────────────────────────────────── */
 
   var dockerContainerDeleteId = null;
+  var dockerLogsContainerId = null;
+  var dockerLogsEventSource = null;
 
   // Open create-container modal
   $(document).on("click", "#docker-create-container-btn", function () {
@@ -676,7 +678,11 @@ $(function () {
           json = {};
         }
 
-        var output = json.output || data;
+        var output = (json.output !== undefined) ? json.output : data;
+        if (!output) {
+          $("#docker-inspect-output").text("(no output — container may not exist or Docker is unreachable)");
+          return;
+        }
         try {
           output = JSON.stringify(JSON.parse(output), null, 2);
         } catch (e) {
@@ -685,7 +691,104 @@ $(function () {
 
         $("#docker-inspect-output").text(output);
       },
+    ).fail(function (xhr) {
+      $("#docker-inspect-output").text("Request failed: " + xhr.status + " " + xhr.statusText);
+    });
+  });
+
+  // Container logs — open modal and load recent log lines
+  $(document).on("click", ".js-container-logs", function () {
+    var id = $(this).data("id");
+    var name = $(this).data("name") || id;
+
+    // Stop any running live stream from a previous modal open
+    if (dockerLogsEventSource) {
+      dockerLogsEventSource.close();
+      dockerLogsEventSource = null;
+    }
+
+    dockerLogsContainerId = id;
+    $("#docker-logs-container-name").text(name);
+    $("#docker-logs-output").text("Loading…");
+    $("#docker-logs-follow-btn")
+      .html('<i class="fas fa-satellite-dish me-1"></i>Follow Live')
+      .removeClass("btn-danger")
+      .addClass("btn-success");
+
+    new bootstrap.Modal(document.getElementById("docker-logs-modal")).show();
+
+    var csrfToken = $("meta[name=csrf_token]").attr("content");
+    $.post(
+      "plugins/Docker/ajax/docker_action.php",
+      { action: "container_logs", id: id, csrf_token: csrfToken },
+      function (data) {
+        var json;
+        try {
+          json = JSON.parse(data);
+        } catch (e) {
+          json = {};
+        }
+        var output = (json.output !== undefined) ? json.output : data;
+        var pre = document.getElementById("docker-logs-output");
+        pre.textContent = output || "(no log output)";
+        pre.scrollTop = pre.scrollHeight;
+      },
+    ).fail(function (xhr) {
+      $("#docker-logs-output").text("Request failed: " + xhr.status + " " + xhr.statusText);
+    });
+  });
+
+  // Follow Live toggle — start/stop SSE log stream
+  $(document).on("click", "#docker-logs-follow-btn", function () {
+    if (dockerLogsEventSource) {
+      dockerLogsEventSource.close();
+      dockerLogsEventSource = null;
+      $(this)
+        .html('<i class="fas fa-satellite-dish me-1"></i>Follow Live')
+        .removeClass("btn-danger")
+        .addClass("btn-success");
+      return;
+    }
+
+    $(this)
+      .html('<i class="fas fa-stop me-1"></i>Stop Following')
+      .removeClass("btn-success")
+      .addClass("btn-danger");
+
+    var pre = document.getElementById("docker-logs-output");
+    pre.textContent = "";
+
+    dockerLogsEventSource = new EventSource(
+      "plugins/Docker/ajax/docker_logs_stream.php?id=" + encodeURIComponent(dockerLogsContainerId),
     );
+
+    dockerLogsEventSource.onmessage = function (e) {
+      pre.textContent += e.data + "\n";
+      pre.scrollTop = pre.scrollHeight;
+    };
+
+    dockerLogsEventSource.onerror = function () {
+      if (dockerLogsEventSource) {
+        dockerLogsEventSource.close();
+        dockerLogsEventSource = null;
+      }
+      $("#docker-logs-follow-btn")
+        .html('<i class="fas fa-satellite-dish me-1"></i>Follow Live')
+        .removeClass("btn-danger")
+        .addClass("btn-success");
+    };
+  });
+
+  // Clean up SSE stream when logs modal closes
+  $(document).on("hidden.bs.modal", "#docker-logs-modal", function () {
+    if (dockerLogsEventSource) {
+      dockerLogsEventSource.close();
+      dockerLogsEventSource = null;
+    }
+    $("#docker-logs-follow-btn")
+      .html('<i class="fas fa-satellite-dish me-1"></i>Follow Live')
+      .removeClass("btn-danger")
+      .addClass("btn-success");
   });
 
   // Open delete-container confirmation modal

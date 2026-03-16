@@ -297,12 +297,32 @@ class DockerService
      * Returns raw JSON inspect output for a container
      *
      * @param string $id container ID or name
-     * @return string JSON string from docker inspect
+     * @return string JSON string from docker inspect, or empty string on failure
      */
     public function inspectContainer(string $id): string
     {
-        $output = shell_exec('sudo /usr/bin/docker inspect ' . escapeshellarg($id));
-        return $output ?? '';
+        exec('sudo ' . $this->dockerBin . ' inspect ' . escapeshellarg($id) . ' 2>&1', $lines, $exitCode);
+        if ($exitCode !== 0 || empty($lines)) {
+            return '';
+        }
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Returns recent log output for a container
+     *
+     * @param string $id   container ID or name
+     * @param int    $tail number of lines to return from the end
+     * @return string log output lines joined with newlines
+     */
+    public function getContainerLogs(string $id, int $tail = 200): string
+    {
+        exec(
+            'sudo ' . $this->dockerBin . ' logs --tail=' . $tail . ' --timestamps ' . escapeshellarg($id) . ' 2>&1',
+            $lines,
+            $exitCode
+        );
+        return implode("\n", $lines);
     }
 
     /**

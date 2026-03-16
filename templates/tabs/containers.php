@@ -48,6 +48,11 @@
                   data-bs-target="#docker-inspect-modal">
             <?php echo _('Inspect'); ?>
           </button>
+          <button class="btn btn-sm btn-secondary js-container-logs"
+                  data-id="<?php echo htmlspecialchars($container->ID ?? ''); ?>"
+                  data-name="<?php echo htmlspecialchars($container->Names ?? ''); ?>">
+            <i class="fas fa-file-alt me-1"></i><?php echo _('Logs'); ?>
+          </button>
           <button class="btn btn-sm btn-outline-danger js-all-container-delete"
                   data-id="<?php echo htmlspecialchars($container->ID ?? ''); ?>"
                   data-name="<?php echo htmlspecialchars($container->Names ?? ''); ?>">
@@ -76,6 +81,29 @@
       </div>
     </div>
   </div><!-- /#docker-inspect-modal -->
+
+  <!-- Logs Modal -->
+  <div class="modal fade" id="docker-logs-modal" tabindex="-1" aria-labelledby="dockerLogsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="dockerLogsModalLabel">
+            <i class="fas fa-file-alt me-2"></i><?php echo _('Logs'); ?>: <span id="docker-logs-container-name"></span>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?php echo _('Close'); ?>"></button>
+        </div>
+        <div class="modal-body p-0">
+          <pre id="docker-logs-output" class="bg-dark text-light p-3 mb-0" style="height:420px;overflow-y:auto;font-size:0.78em;white-space:pre-wrap;word-break:break-all;"></pre>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo _('Close'); ?></button>
+          <button type="button" class="btn btn-success" id="docker-logs-follow-btn">
+            <i class="fas fa-satellite-dish me-1"></i><?php echo _('Follow Live'); ?>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /#docker-logs-modal -->
 
   <!-- Delete Container Modal -->
   <div class="modal fade" id="docker-container-delete-modal" tabindex="-1" aria-labelledby="dockerContainerDeleteModalLabel" aria-hidden="true">
